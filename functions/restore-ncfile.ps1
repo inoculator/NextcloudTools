@@ -2,9 +2,6 @@ function restore-ncfile {
 <#
 .DESCRIPTION
     restores a given file or folder from trashbin
-.PARAMETER dbUser
-    Optional: psCredentials for database connection
-    Default: prompts at start
 .PARAMETER ncUser
     Mandatory: the nextcloud user that owns the files to restore
 .PARAMETER DateAfter

@@ -11,10 +11,8 @@ Ein PowerShell‑Script zur Wiederherstellung gelöschter Nextcloud‑Dateien od
 Erzeugt die laufzeit Funktion "restore-ncfile".  
 
 ### Anpassungen
-Innerhalb der Funktion müssen 3 Werte vor Benutzung angepasst werden:  
+Innerhalb der Funktion muss ein Wert vor Benutzung angepasst werden:  
 ```
-$dbServer = "[Put Database FQDN in Here]" #eg: "database.contoso.com"
-$dbName = "[put Nextcloud Databasename in here]" #eg: "nextcloud"
 $ncBaseDir = "[put Nextcloud base dir in here]" #eg: "/var/www/nextcloud"
 ```
 
@@ -68,7 +66,6 @@ Das Script ist ideal für Administratoren, die gezielt einzelne Dateien oder gan
 | Parameter | Pflicht | Beschreibung |
 |----------|---------|--------------|
 | `-ncUser` | ✔️ | Nextcloud‑Benutzer, dessen gelöschte Dateien/Ordner wiederhergestellt werden sollen |
-| `-dbUser` | ❌ | Datenbank‑Credentials (PSCredential). Wenn nicht angegeben → Prompt |
 | `-DateAfter` | ❌ | Untere Zeitgrenze (Standard: jetzt − 2 Tage) |
 | `-DateBefore` | ❌ | Obere Zeitgrenze (Standard: jetzt) |
 | `-location` | ❌ | Regex für ursprünglichen Pfad (Standard: `.*`) |
@@ -107,17 +104,18 @@ Das Script ist ideal für Administratoren, die gezielt einzelne Dateien oder gan
 ---
 
 ## ⚙️ Funktionsweise (Kurzfassung)  
-1. Verbindung zur Nextcloud‑Datenbank  
-2. SQL‑Abfrage der passenden Trash‑Einträge  
-3. Zuordnung zu den Dateien im Trashbin‑Dateisystem  
-4. Validierung:
+1. Einlesen der Nextcloud Konfiguration  
+2. Verbindung zur Nextcloud‑Datenbank  
+3. SQL‑Abfrage der passenden Trash‑Einträge  
+4. Zuordnung zu den Dateien im Trashbin‑Dateisystem  
+5. Validierung:
    - Datei/Ordner existiert  
    - Regex gültig  
-5. Wiederherstellung:
+6. Wiederherstellung:
    - Zielpfad erzeugen  
    - Datei/Ordner verschieben  
    - Optional überschreiben  
-6. Bei echtem Lauf (`-whatif` **nicht** gesetzt):
+7. Bei echtem Lauf (`-whatif` **nicht** gesetzt):
    - DB‑Eintrag löschen  
    - Rechte korrigieren  
    - OCC‑Rescan für den betroffenen Pfad  
