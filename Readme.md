@@ -2,7 +2,7 @@
 ReadMe.md created by AI  
 
 # Human Disclaimer
-Der Code wird bereitgestellt "as-is". Es wird keinerlei Gewährleistung gegeben. Weder auf korrekte Funktion, noch auf Schäden welche durch die Nutzung entstehen. Es wird davon abgeraten, den Code in Produktiven Systemen zu verwenden!
+Der Code wird bereitgestellt "as-is". Es wird keinerlei Gewährleistung gegeben. Weder auf korrekte Funktion, noch auf Schäden, welche durch die Nutzung entstehen. Es wird davon abgeraten, den Code in produktiven Systemen zu verwenden!
 
 ---
 
