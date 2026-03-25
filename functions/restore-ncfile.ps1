@@ -29,7 +29,6 @@ function restore-ncfile {
 #requires -module SimplySQL
 [cmdletbinding()]
 param (
-    [pscredential]$dbUser = $(get-credential -m "Database User"),
     [parameter(Mandatory=$true)][string]$ncUser,
     [datetime]$DateAfter = $(get-date).adddays(-2),
     [datetime]$DateBefore = $(get-date),
@@ -39,15 +38,33 @@ param (
     [switch]$whatif
     )
 
-$dbServer = "[Put Database FQDN in Here]" #eg: "database.contoso.com"
-$dbName = "[put Nextcloud Databasename in here]" #eg: "nextcloud"
-$ncBaseDir = "[put Nextcloud base dir in here]" #eg: "/var/www/nextcloud"
 $dateAfterUX = ([System.DateTimeOffset]$dateAfter).ToUnixTimeSeconds()
 $dateBeforeUX = ([System.DateTimeOffset]$dateBefore).ToUnixTimeSeconds()
-$ncUserRoot = "$ncBaseDir/data/$ncUser/files"
-$TrashBinRoot = "$ncUserRoot/../files_trashbin/files"
+$ncBaseDir = "/var/www/nextcloud"
 $location = [regex]::Escape($location)
 $itemName = [regex]::Escape($itemName)
+
+## loading Nextcloud config
+$configPath = "$ncBaseDir/config/config.php"
+$tmp = "/tmp/readconfig.php"
+
+@"
+<?php
+include '$configPath';
+echo json_encode(`$CONFIG, JSON_PRETTY_PRINT);
+?>
+"@ | Set-Content $tmp
+
+$NextcloudConfig = php $tmp | ConvertFrom-Json
+
+Remove-Item $tmp
+
+$dbServer = $NextcloudConfig.dbhost -replace ("(^.+)\:.*",'$1')
+$dbName = $NextcloudConfig.dbname
+$securePass = ConvertTo-SecureString $($NextcloudConfig.dbpassword) -AsPlainText -Force
+$dbUser = New-Object System.Management.Automation.PSCredential ($($NextcloudConfig.dbUser), $securePass)
+$ncUserRoot = "$($NextcloudConfig.datadirectory)/$ncUser/files"
+$TrashBinRoot = "$ncUserRoot/../files_trashbin/files"
 
 write-verbose "##############################`n##"
 write-verbose "`$ncUser=$ncUser"
@@ -73,6 +90,9 @@ if (-not $(test-path $TrashBinRoot)) {
     throw("trashbin not found at $TrashBinRoot")
 }
 
+if ($NextcloudConfig.dbtype -ne "mysql") {
+    throw("We only support mysql as DBType")
+}
 ###################################
 ##
 ## Integrated Functions
@@ -91,33 +111,6 @@ function Test-RegexValid {
     }
 }
 
-function Test-SudoWWWData {
-    try {
-        $cmd = "sudo -u www-data id -u"
-        $result = bash -c $cmd 2>&1
-        if ($LASTEXITCODE -ne 0) { return $false }
-        if ($result.Trim() -match '^\d+$') { return $true }
-        return $false
-    }
-    catch {
-        return $false
-    }
-}
-
-function Test-WriteAccess {
-    param([string]$Path)
-
-    try {
-        $testFile = Join-Path $Path ".nc_restore_test_$(Get-Random)"
-        New-Item -Path $testFile -ItemType File -Force -ErrorAction Stop | Out-Null
-        Remove-Item $testFile -Force -ErrorAction Stop
-        return $true
-    }
-    catch {
-        return $false
-    }
-}
-
 ####################################
 ##
 ## main
@@ -129,14 +122,6 @@ if ( -not $(Test-RegexValid $location)) {
 }
 if ( -not $(Test-RegexValid $itemName)) {
     throw ("itemName not valid")
-}
-
-if (-not (Test-WriteAccess $ncUserRoot)) {
-    throw "Insufficient permissions: Cannot write to $ncUserRoot"
-}
-
-if (-not (Test-SudoWWWData)) {
-    throw "sudo -u www-data does not work. Check sudoers configuration."
 }
 
 try {
@@ -184,10 +169,7 @@ foreach ($item in $dbResult) {
         Write-Warning "$estimatedItemName not found. Skipping!"
         continue
     }
-
     ## we found a corresponding item.
-    ## now we need to check, wether it's a file or folder
-    $isDirectory = test-path $LocatedItem.fullname -PathType Container
 
     ## extract the original location
     $ItemDestinationFolder = $ncUserRoot + "/" + $item.location
