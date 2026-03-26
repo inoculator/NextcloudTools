@@ -209,7 +209,7 @@ foreach ($item in $dbResult) {
         
         ## and we do a file scan -but only on the new item
         write-host "running occ file scan on restored object"
-        sudo -u www-data php /var/www/nextcloud/occ files:scan --path="$ncUser/files/$($item.location)"
+        sudo -u www-data php "$ncBaseDir/occ" files:scan --path="$ncUser/files/$($item.location)"
     } else {
         write-warning "WHATIF set. Skipping orchestrator."
     }
