@@ -174,6 +174,7 @@ foreach ($item in $dbResult) {
 
     ## extract the original location
     $ItemDestinationFolder = join-path $ncUserRoot $RestoreLocation $item.location
+    $occScanPath = join-path $ncUser "files" $RestoreLocation $item.location
 
     ## Define the item restore destination
     $ItemDestination = join-path  $ItemDestinationFolder $item.id
@@ -204,7 +205,7 @@ foreach ($item in $dbResult) {
     if (-not $whatif) {
         ## the item has been moved, now we remove the DBrecord
         $dbQuery = "delete from oc_files_trash where auto_id = '$($item.auto_id)'"
-        write-host $dbQuery
+        write-verbose $dbQuery
         Invoke-SqlQuery -Query $dbQuery -ErrorAction stop |out-null
 
         ## now we need to reset the permissions
@@ -212,8 +213,10 @@ foreach ($item in $dbResult) {
         chown -R www-data:www-data $ncUserRoot
         
         ## and we do a file scan -but only on the new item
-        write-host "running occ file scan on restored object"
-        sudo -u www-data php "$ncBaseDir/occ" files:scan --path="$ncUser/files/$($item.location)"
+        write-verbose "running occ file scan on restored object"
+        write-verbose "sudo -u www-data php '$ncBaseDir/occ' files:scan --path='$occScanPath'"
+        sudo -u www-data php "$ncBaseDir/occ" files:scan --path="$occScanPath"
+
     } else {
         write-warning "WHATIF set. Skipping orchestrator."
     }
