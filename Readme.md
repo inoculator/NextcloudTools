@@ -104,7 +104,10 @@ restore-ncfile -ncUser alice -location "Fotos" -whatif
 ```
 
 ### Beipiel 6 - Wiederherstellen in alternativen Ordner
+```powershell
 restore-ncfile -ncUser alice -location "Fotos" -RestoreLocation "INC123456-Restore"
+```
+
 ---
 
 ## ⚙️ Funktionsweise (Kurzfassung)  
