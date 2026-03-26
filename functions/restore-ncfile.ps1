@@ -16,6 +16,9 @@ function restore-ncfile {
 .PARAMETER itemName
     Optional: A regular expression of the item name to restore
     Default: ".*"
+.PARAMETER RestoreLocation
+    Optional: A leading folder to restore the object to, instead of the original location.
+    default: empty 
 .PARAMETER force
     Optional: will overwrite existing files and folder.
     Default: false
@@ -31,6 +34,7 @@ param (
     [datetime]$DateBefore = $(get-date),
     [string]$location = ".*",
     [string]$itemName = ".*",
+    [string]$RestoreLocation = "",
     [switch]$force,
     [switch]$whatif
     )
@@ -169,10 +173,10 @@ foreach ($item in $dbResult) {
     ## we found a corresponding item.
 
     ## extract the original location
-    $ItemDestinationFolder = $ncUserRoot + "/" + $item.location
+    $ItemDestinationFolder = join-path $ncUserRoot $RestoreLocation $item.location
 
-    ## Define the item destination
-    $ItemDestination = $ItemDestinationFolder + "/" + $item.id
+    ## Define the item restore destination
+    $ItemDestination = join-path  $ItemDestinationFolder $item.id
 
 
     ## now check, if that file/folder already exists
