@@ -41,6 +41,7 @@ Das Script ist ideal für Administratoren, die gezielt einzelne Dateien oder gan
   - Dateiname (`-itemName`, Regex)
 - Sicheres Regex‑Handling (Escape + Validierung)
 - Optionales Überschreiben existierender Dateien/Ordner (`-force`)
+- Optionales Wiederherstellen in ein alternatives Verzeichnis
 - Vollständiger Simulationsmodus (`-whatif`)
 - Automatische Bereinigung der Datenbank
 - Automatische Rechtekorrektur (`chown`)
@@ -70,6 +71,7 @@ Das Script ist ideal für Administratoren, die gezielt einzelne Dateien oder gan
 | `-DateBefore` | ❌ | Obere Zeitgrenze (Standard: jetzt) |
 | `-location` | ❌ | Regex für ursprünglichen Pfad (Standard: `.*`) |
 | `-itemName` | ❌ | Regex für Dateinamen (Standard: `.*`) |
+| `-RestoreLocation` | ❌ | Altertnativer Verzeichnisname in den die Daten wiederhergetellt werden |
 | `-force` | ❌ | Überschreibt existierende Dateien/Ordner |
 | `-whatif` | ❌ | Simuliert alle Aktionen ohne Änderungen |
 
@@ -78,29 +80,31 @@ Das Script ist ideal für Administratoren, die gezielt einzelne Dateien oder gan
 ## ▶️ Nutzung  
 ### Beispiel 1 — Datei anhand des Namens wiederherstellen  
 ```powershell
-./restore-ncfile -ncUser alice -itemName "bericht.pdf"
+restore-ncfile -ncUser alice -itemName "bericht.pdf"
 ```
 
 ### Beispiel 2 — Dateien aus einem bestimmten Ordner wiederherstellen  
 ```powershell
-./restore-ncfile -ncUser bob -location "Documents/Projekte"
+restore-ncfile -ncUser bob -location "Documents/Projekte"
 ```
 
 ### Beispiel 3 — Wiederherstellung eines Zeitfensters  
 ```powershell
-./restore-ncfile -ncUser alice -DateAfter "2024-01-01" -DateBefore "2024-01-03"
+restore-ncfile -ncUser alice -DateAfter "2024-01-01" -DateBefore "2024-01-03"
 ```
 
 ### Beispiel 4 — Existierende Dateien überschreiben  
 ```powershell
-./restore-ncfile -ncUser alice -itemName "scan_.*" -force
+restore-ncfile -ncUser alice -itemName "scan_.*" -force
 ```
 
 ### Beispiel 5 — Simulation ohne Änderungen  
 ```powershell
-./restore-ncfile -ncUser alice -location "Fotos" -whatif
+restore-ncfile -ncUser alice -location "Fotos" -whatif
 ```
 
+### Beipiel 6 - Wiederherstellen in alternativen Ordner
+restore-ncfile -ncUser alice -location "Fotos" -RestoreLocation "INC123456-Restore"
 ---
 
 ## ⚙️ Funktionsweise (Kurzfassung)  
